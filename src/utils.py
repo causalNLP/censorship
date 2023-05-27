@@ -1,71 +1,11 @@
-import argparse
 import matplotlib.pyplot as plt
 import logging
 
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-    '-d', '--debug',
-    help="Print lots of debugging statements",
-    action="store_const", dest="loglevel", const=logging.DEBUG,
-    default=logging.WARNING,
-    )
-    parser.add_argument(
-        '-v', '--verbose',
-        help="Be verbose, print cuda device info and memory usage and training progress",
-        action="store_const", dest="loglevel", const=logging.INFO,
-    )
-
-    parser.add_argument(
-        '--batch-size', type=int,
-        help="Set the batch size for each gpu",
-        dest="batch_size",
-        default=32,
-    )
-    parser.add_argument(
-        '--epochs', type=int,
-        help="Set the number of epochs",
-        dest="epochs",
-        default=10,
-    )
-    parser.add_argument(
-        '--lr', type=float,
-        help="Set the learning rate",
-        dest="lr",
-        default=1e-05,
-    )
-    parser.add_argument(
-        '--lang', type=str,
-        help="Set the language",
-        dest="lang",
-        default="tr",
-    )
-
-    parser.add_argument(
-        '--max-len', type=int,
-        help="Set the maximum length",
-        dest="max_len",
-        default=256,
-    )
-    parser.add_argument(
-        '--GPUs', type=int,
-        help="Set the number of GPUs",
-        dest="GPUs",
-        default=4,
-    )
-    parser.add_argument(
-        '--model-path', type=str,
-        help="Set the model path",
-        dest="model_path"
-    )
-    parser.add_argument(
-        "--hf-model", type=bool, default=False,
-        help="Set the huggingface model",
-        dest="hf_model",
-    )
-
-    args = parser.parse_args()
-    return args
+class Colors:
+    INFO = "\033[94m"
+    DEBUG = "\033[92m"
+    SMALL_INFO = "\033[96m"
+    END = "\033[0m"
 
 from prettytable import PrettyTable
 def count_parameters(model):

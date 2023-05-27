@@ -11,5 +11,5 @@
 
 conda activate torch
 echo $SLURM_JOB_ID
-python train.py -v --batch-size 24 --epochs 25 --model-path models/${SLURM_JOB_ID}_model  --GPUs 8
+python train.py -v --batch-size 24 --epochs 25 --model-path models/${SLURM_JOB_ID}_model  --GPUs 4 --hf-model
 ```

@@ -14,7 +14,8 @@ class CensorDataset(Dataset):
         dataframe = pd.read_csv(path)
         
         self.dataframe = self.preprocess(dataframe)
-
+        if lang is not None:
+            self.dataframe = self.filter_lang(lang)
         self.max_len = 512
         if lang is not None:
             self.filter_lang(lang)
