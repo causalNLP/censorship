@@ -1,1 +1,1 @@
-# mycensorship
+# censorship
