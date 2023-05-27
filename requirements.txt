@@ -1,0 +1,8 @@
+feature_engine==1.6.0
+matplotlib==3.7.1
+numpy==1.24.2
+pandas==1.5.3
+prettytable==3.7.0
+torch==2.0.0
+torchtext==0.15.1
+tqdm==4.65.0
