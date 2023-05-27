@@ -58,7 +58,11 @@ def get_args():
         help="Set the model path",
         dest="model_path"
     )
-
+    parser.add_argument(
+        "--hf-model", type=bool, default=False,
+        help="Set the huggingface model",
+        dest="hf_model",
+    )
 
     args = parser.parse_args()
     return args
@@ -84,3 +88,5 @@ def plot_loss_across_epochs(total_loss):
     plt.ylabel("Loss")
     plt.legend()
     plt.savefig(ConfigTrain.model_path + "loss.png")
+    
+    

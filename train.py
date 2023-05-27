@@ -27,6 +27,7 @@ class ConfigTrain:
     train_path:str = "data/dataset_train.csv"
     eval_path:str = "data/dataset_val.csv"
     device:str = "cuda:0"
+    use_hf_transformers:bool = args.hf_model
     model_config: Dict = field(default_factory=lambda: Config().asdict())
 
 
@@ -230,5 +231,71 @@ def train():
         )
         torch.save(model.module.state_dict(), ConfigTrain.model_path + str(epoch) + ".pt")
 
+
+import transformers
+import torch
+import pandas as pd
+
+def train_hf_transformers():
+    # import XLMR_BASE_ENCODER for sequence classification
+    model = transformers.XLMRobertaForSequenceClassification.from_pretrained("xlm-roberta-base", num_labels=2)
+    tokenizer = transformers.AutoTokenizer.from_pretrained("xlm-roberta-base")
+
+    data = pd.read_csv("data/dataset_train.csv")
+    eval_data = pd.read_csv("data/dataset_val.csv")
+    eval_data = eval_data[["text_proc", "censored"]].dropna()
+    eval_data.columns = ["text", "labels"]
+    data = data[["text_proc", "censored"]].dropna()
+    data.columns = ["text", "labels"]
+
+    from datasets import Dataset
+    train = Dataset.from_pandas(data)
+    train = train.map(lambda x: tokenizer(x["text"], padding="max_length", truncation=True), batched=True)
+    eval = Dataset.from_pandas(eval_data)
+    eval = eval.map(lambda x: tokenizer(x["text"], padding="max_length", truncation=True), batched=True)
+
+    from transformers import DataCollatorWithPadding
+    data_collar = DataCollatorWithPadding(tokenizer=tokenizer)
+
+    import evaluate
+    accuracy = evaluate.load("accuracy")
+
+    import numpy as np
+    def compute_metrics(eval_pred):
+        predictions, labels = eval_pred
+        predictions = np.argmax(predictions, axis=1)
+        return accuracy.compute(predictions=predictions, references=labels)
+
+    training_args = transformers.TrainingArguments(
+        output_dir= "HF_" + ConfigTrain.model_path,
+        learning_rate=ConfigTrain.lr,
+        per_device_train_batch_size=ConfigTrain.batch_size,
+        per_device_eval_batch_size=ConfigTrain.batch_size,
+        num_train_epochs=ConfigTrain.epochs,
+        weight_decay=0.01,
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
+    )
+
+    trainer = transformers.Trainer(
+        model = model,
+        args = training_args,
+        train_dataset = train,
+        eval_dataset = eval,
+        tokenizer=tokenizer,
+        data_collator=data_collar,
+        compute_metrics=compute_metrics
+    )
+
+    trainer.train()
+    
+
+
+
 if __name__ == "__main__":
-    train()
+    if ConfigTrain.use_hf_transformers:
+        logging.info("Training with HF transformers")
+        train_hf_transformers()
+    else:
+        logging.info("Training with custom model")
+        train()

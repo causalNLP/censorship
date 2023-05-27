@@ -50,7 +50,7 @@ class Model(nn.Module):
             nn.Linear(Config.hidden_size, Config.hidden_size),
             nn.ReLU(),
             nn.Dropout(0.1, inplace=False),
-            nn.Linear(Config.hidden_size, Config.class_layer_size[2]),
+            nn.Linear(Config.hidden_size, 2),
         )
         ## date embedding
 
