@@ -91,7 +91,7 @@ def main():
     if args.hf_model:
         logging.info(f"{Colors.INFO} Using HuggingFace model {Colors.END}")
         train_hf(
-            output_dir="HF" + args.model_path,
+            output_dir=args.model_path,
             learning_rate=args.lr,
             batch_size=args.batch_size,
             epochs=args.epochs,
