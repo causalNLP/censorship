@@ -23,7 +23,7 @@ where:
 
 The `<OPTION>` can be:
 - `--shap` to compute the Shapley values for each token of the dataset using the finetuned model
-- `--finetune` to finetune the model on the dataset
+- `--finetune` to finetune the model on the dataset using RoBerta base model
 - `--hf_search` to search for the best hyperparameters. The hyperparameters find are saved in `<checkpoint_dir>/best_hyperparams.txt`
 - `--all` to do all the above steps, hf_search, finetune, shap values (in this case the `--checkpoint_path` is not needed)
 
