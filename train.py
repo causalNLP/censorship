@@ -2,7 +2,7 @@ import logging
 import argparse
 from src.utils import count_parameters, Colors
 from src.train_pytorch import train_pt
-from src.train_hf import train_hf
+from src.train_hf import CensorshipTrainer
 
 
 def get_args():
@@ -90,14 +90,16 @@ def main():
     args = get_args()
     if args.hf_model:
         logging.info(f"{Colors.INFO} Using HuggingFace model {Colors.END}")
-        train_hf(
+        trainer = CensorshipTrainer( args.train_dataset_path, args.eval_dataset_path)
+        trainer.load_data()
+        trainer.train(
             output_dir=args.model_path,
             learning_rate=args.lr,
             batch_size=args.batch_size,
             epochs=args.epochs,
-            train_dataset_path=args.train_dataset_path,
-            eval_dataset_path=args.eval_dataset_path
+            weight_decay=0.01,
         )
+        
     else:
         logging.info(f"{Colors.INFO} Using PyTorch model {Colors.END}")
         train_pt(

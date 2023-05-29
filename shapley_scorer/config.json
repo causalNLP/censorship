@@ -1,0 +1,23 @@
+{
+    "global": {
+        "dataset_path": "../data/dataset.csv",
+        "checkpoint_path": ""
+    },
+
+    "hyperparameter_search": {
+        "num_trials": 10,
+        "output_dir": "../models/hyper_search",
+        "batch_size": 32
+    },
+
+    "finetuning": {
+        "batch_size": 32,
+        "weight_decay": 0.01,
+        "epochs": 10,
+        "learning_rate": 0.0001
+    },
+
+    "shapley": {
+        "output_data_path": "../data/shapley.csv"
+    }
+}
