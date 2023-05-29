@@ -2,13 +2,16 @@ import pandas as pd
 import transformers
 import torch
 import re
+import warnings
+warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 import shap
+# suppress shap warnings
 from tqdm import tqdm
 import concurrent.futures
 import numpy as np
 
     
-class ShaplyScorer:
+class ShapleyScorer:
     """
 Class to compute SHAP values for a given model and dataset.
 Initialize with a model and a dataset.
@@ -67,7 +70,7 @@ scorer.save_shap_values()
         """
         raise NotImplementedError
     
-    def load_model(self, type:str, checkpoint:str):
+    def load_model(self,checkpoint:str, type:str = "hf"):
         """
         Load a model from a checkpoint.
         Supported types: 'hf' (huggingface), 'custom' (custom pytorch model)"""
@@ -173,14 +176,14 @@ scorer.save_shap_values()
         df.to_csv(self.output_data_path, index=False)
         
     def pipeline(self,
-        model_type:str,
         model_checkpoint:str,
+        model_type:str="hf",
         data_subset:float=1.0,
         label_value:str="LABEL_1",
         multi_thread:bool=False,
     ):
         print("Loading model and data, initializing SHAP")
-        self.load_model(model_type, model_checkpoint)
+        self.load_model(model_checkpoint, model_type)
         self.load_data(subset=data_subset)
         self.init_shape_explainer()
         print("Running SHAP")

@@ -1,14 +1,14 @@
 from shapley_score import ShapleyScorer
-from train_hf import train_hf
-import argparse
 from train_hf import HF_Trainer
+import argparse
+
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--config_path", type=str, default="config.json", dest="config_path")
-argparser.add_argument("--run_hyperparameter_search", default=False, action="store_true", dest="run_hyperparameter_search")
-argparser.add_argument("--run_finetuning", default=False, action="store_true", dest="run_finetuning")
-argparser.add_argument("--run_shap", default=False, action="store_true", dest="run_shap")
-argparser.add_argument("--run_all", default=False, action="store_true", dest="run_all")
-argparser.add_argument("--checkpoint_path", type=str, default="output", dest="checkpoint_path")
+argparser.add_argument("--hp_search", default=False, action="store_true", dest="run_hyperparameter_search")
+argparser.add_argument("--finetune", default=False, action="store_true", dest="run_finetuning")
+argparser.add_argument("--shap", default=False, action="store_true", dest="run_shap")
+argparser.add_argument("--all", default=False, action="store_true", dest="run_all")
+argparser.add_argument("--checkpoint_dir", type=str, default=None, dest="checkpoint_dir")
 args = argparser.parse_args()
 
 
@@ -33,7 +33,7 @@ def run_finetuning(config):
     trainer = HF_Trainer(config["global"]["dataset_path"])
     trainer.load_data()
     trainer.train(
-        output_dir=config["global"]["checkpoint_path"],
+        output_dir=config["global"]["checkpoint_dir"],
         learning_rate=config["finetuning"]["learning_rate"],
         batch_size=config["finetuning"]["batch_size"],
         weight_decay=config["finetuning"]["weight_decay"],
@@ -46,8 +46,8 @@ def run_shap(config):
         output_data_path=config["shapley"]["output_data_path"]
     )
     scorer.pipeline(
-        model_type = "xlm-roberta-base",
-        model_checkpoint=config["global"]["checkpoint_path"]
+        model_checkpoint=config["global"]["checkpoint_dir"],
+        data_subset=config["shapley"]["data_subset"],
     )
     
 
@@ -55,7 +55,8 @@ def run_shap(config):
 
 if __name__ == "__main__":
     config = parse_config(config_path = args.config_path)
-    config["global"]["checkpoint_path"] = args.checkpoint_path
+    if args.checkpoint_dir is not None:    
+        config["global"]["checkpoint_dir"] = args.checkpoint_dir
     
     if args.run_hyperparameter_search:
         run_hyperparameter_search(config)

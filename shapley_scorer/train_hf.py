@@ -99,4 +99,8 @@ class HF_Trainer:
 
         print(f"Best hyperparameters: {best_hyperparameters}")
         print(f"Best metric: {best_metric}")
+        # save the best hyperparameters
+        with open(f"{output_dir}/best_hyperparameters.txt", "w") as f:
+            f.write(f"Best hyperparameters: {best_hyperparameters}\n")
+            f.write(f"Best metric: {best_metric}\n")
         return best_hyperparameters
