@@ -54,8 +54,9 @@ class Model(nn.Module):
         )
         ## date embedding
 
-    def forward(self, tweet_tokens): ## [batch_size, max_seq_len] 
-             
+    def forward(self, tweet_tokens): ## [batch_size, max_seq_len], [batch_size, max_seq_len]
+        #apply the attention mask
+        
         # get the tweet embedding
         sentence_embedding = self.xlmr_roberta_base(tweet_tokens) # [batch_size, max_seq_len, hidden_size]
         sentence_embedding = sentence_embedding[:, 0, :] # [batch_size, hidden_size]

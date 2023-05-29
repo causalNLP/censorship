@@ -13,6 +13,8 @@ import json
 from dataclasses import dataclass, field, asdict
 
 
+
+
 @dataclass
 class ConfigTrain:
     model_path: str

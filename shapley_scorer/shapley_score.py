@@ -115,7 +115,10 @@ scorer.save_shap_values()
                 continue
             
             list_of_string = [text]
-            value = self.explainer(list_of_string)
+            try:
+                value = self.explainer(list_of_string)
+            except:
+                continue
             shap_values.append(value[:,:,label_value])
         return shap_values
     
