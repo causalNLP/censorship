@@ -37,6 +37,10 @@ The class `ExtendedShapleyScorer` is initialized with the following arguments:
 - `checkpoint_path`: path to the checkpoint (.pt) file of the model to use or name of the pretrained model (of class `CustomizableModel`)
 The class implement a custom model for the shapley computation and a custom tokenizer to mask the token during the computation.
 
+The class `ExtendedTrainer` support also the parallel training on multiple GPUs with the accelerate library from huggingface. To use, run the training script with the following command using `parallel_train` method of `Trainer` class instead of the `train` metodh:
+```bash
+accelerate launch run.py --finetune --last-checkpoint <path_to_checkpoint>
+```
 ## Usage
 To finetune a model initialize the trainer class and call the `train` method,
 To compute the shapley scores initialize the scorer class and call the `run_shap` method, then call the `shap_values_for_words` to compute the average of the shap score for each word and `save_shap_values` to save the results in a csv file.
