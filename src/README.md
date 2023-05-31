@@ -42,4 +42,4 @@ To finetune a model initialize the trainer class and call the `train` method,
 To compute the shapley scores initialize the scorer class and call the `run_shap` method, then call the `shap_values_for_words` to compute the average of the shap score for each word and `save_shap_values` to save the results in a csv file.
 
 ## To do
-- [ ] Add method to search for the best hyperparameters.
+- [ ] Improve hyperparameters search method in the class `base.Trainer`
