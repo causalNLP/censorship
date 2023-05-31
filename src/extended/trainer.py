@@ -137,4 +137,4 @@ class ExtendedTrainer(Trainer):
                 json.dump(info_dict, f, indent=4)
             self.last_checkpoint_path = os.path.join(output_dir, f"model_{epoch}.pt")
 
-        return metric_output
+        return metric_output["accuracy"]

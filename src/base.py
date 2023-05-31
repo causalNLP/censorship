@@ -57,8 +57,38 @@ class Trainer(ABC):
         pass
     
     # @abstractmethod
-    def search_hyperparams(self):
-        raise NotImplementedError
+    def search_hyperparams(self,
+                           output_dir:str,
+                           search_space:dict= None,
+                           epochs:int=3,
+                           ):
+        if search_space is None:
+            search_space = {
+                "learning_rate": [1e-6, 1e-5, 1e-4, 1e-3],
+                "weight_decay": [0.0, 0.01, 0.1],
+                "batch_size": [32]
+            }
+        best_accuracy = 0
+        bets_param = {}
+        for lr in search_space["learning_rate"]:
+            pick_random_wd = np.random.choice(search_space["weight_decay"])
+            pick_random_batch = np.random.choice(search_space["batch_size"])
+            accuracy = self.train(output_dir=output_dir,
+                       learning_rate=lr,
+                       batch_size = pick_random_batch,
+                       weight_decay=pick_random_wd,
+                       epochs=epochs)
+            if accuracy > best_accuracy:
+                best_param = {
+                    "learning_rate": lr,
+                    "weight_decay": pick_random_wd,
+                    "batch_size": pick_random_batch
+                }
+                best_accuracy = accuracy
+            # save best hyperparameters
+            
+        return best_param, best_accuracy
+                               
     
 class ShapleyScorer(ABC):
     """ 
