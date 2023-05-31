@@ -62,8 +62,5 @@ class Model(nn.Module):
         sentence_embedding = sentence_embedding[:, 0, :] # [batch_size, hidden_size]
         
         output = self.classification_layer(sentence_embedding) # [batch_size, 2]
-        
-        #get the logits
-        output = F.log_softmax(output, dim=1) # [batch_size, 2]
   
         return output
