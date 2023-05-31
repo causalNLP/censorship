@@ -11,6 +11,7 @@ import pandas as pd
 import json
 import os
 import logging
+import accelerate
 
 
 class CustomizableModel(nn.Module):
@@ -98,6 +99,86 @@ class ExtendedTrainer(Trainer):
                 outputs = self.model(**batch)
                 loss = outputs.loss
                 loss.backward()
+                optimizer.step()
+                lr_scheduler.step()
+                self.model.zero_grad()
+                pbar.update(1)
+                if pbar.n % 100 == 0:
+                    pbar.set_description(f"Epoch {epoch}: loss {loss.item():.3f}")
+                
+            metric = evaluate.load("accuracy")
+            # evaluate
+            self.model.eval()
+            for batch in test_dataloader:
+                batch = {k: v.to(self.device) for k, v in batch.items()}
+                with torch.no_grad():
+                    outputs = self.model(**batch)
+                logits = outputs.logits
+                predictions = torch.argmax(logits, dim=-1)
+                metric.add_batch(predictions=predictions, references=batch["labels"])
+                eval_pbar.update(1)
+            metric_output = metric.compute()
+            # print results
+            logging.info(f"Epoch {epoch}: {metric_output}")
+            
+            # save model
+            # mkdir
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            torch.save(self.model.state_dict(), os.path.join(output_dir, f"model_{epoch}.pt"))
+            with open(os.path.join(output_dir, f"model_{epoch}.json"), "w") as f:
+                info_dict = {
+                    "learning_rate": learning_rate,
+                    "batch_size": batch_size,
+                    "weight_decay": weight_decay,
+                    "epochs": epochs,
+                    "accuracy": metric_output,
+                    "loss": loss.item() # type: ignore
+                }
+                json.dump(info_dict, f, indent=4)
+            self.last_checkpoint_path = os.path.join(output_dir, f"model_{epoch}.pt")
+
+        return metric_output
+    
+    def parallel_train(
+        self,
+        output_dir, 
+        learning_rate, 
+        batch_size, 
+        weight_decay, 
+        epochs):
+        logging.info(f"learning rate: {learning_rate}, batch size: {batch_size}, epochs: {epochs}")
+        accelerator = accelerate.Accelerator()
+        # dataloader
+        train_dataloader = DataLoader(self.train_data, batch_size=batch_size, collate_fn=self.data_collator) # type: ignore
+        test_dataloader = DataLoader(self.eval_data, batch_size=batch_size, collate_fn=self.data_collator) # type: ignore
+        
+        # self.model = self.model.to(self.device)
+        
+        #define optimizer
+        optimizer = transformers.AdamW(self.model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        train_dataloader, eval_dataloader, self.model, optimizer = accelerator.prepare(train_dataloader, test_dataloader, self.model, optimizer )
+        
+        #define step
+        epochs = 3
+        num_training_steps = epochs * len(train_dataloader)
+        lr_scheduler = get_scheduler(
+            name="linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps
+        )
+        
+        pbar = tqdm(range(num_training_steps))
+        eval_pbar = tqdm(range(len(test_dataloader)))
+        # train loop
+        metric_output = None
+        for epoch in range(epochs):
+            metric = evaluate.load("accuracy")
+            for batch in train_dataloader:
+                self.model.train()
+                # batch = {k: v.to(self.device) for k, v in batch.items()}
+                outputs = self.model(**batch)
+                loss = outputs.loss
+                # loss.backward()
+                accelerator.backward(loss)
                 optimizer.step()
                 lr_scheduler.step()
                 self.model.zero_grad()
